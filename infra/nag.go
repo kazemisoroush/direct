@@ -24,7 +24,19 @@ func suppressNag(stack awscdk.Stack, healthRoute constructs.IConstruct) {
 		},
 		{
 			Id:     jsii.String("AwsSolutions-APIG1"),
-			Reason: jsii.String("HTTP API access logging is deferred; the M0 baseline exposes only an unauthenticated health probe."),
+			Reason: jsii.String("HTTP API access logging is deferred; single-user app behind Cognito auth."),
+		},
+		{
+			Id:     jsii.String("AwsSolutions-COG2"),
+			Reason: jsii.String("Cognito MFA is deferred; single-user app."),
+		},
+		{
+			Id:     jsii.String("AwsSolutions-COG8"),
+			Reason: jsii.String("Cognito advanced security requires the paid Plus tier and is deferred; single-user app."),
+		},
+		{
+			Id:     jsii.String("AwsSolutions-DDB3"),
+			Reason: jsii.String("DynamoDB point-in-time recovery is deferred; single-user app, restaurant catalogue is re-seedable."),
 		},
 		{
 			Id:     jsii.String("AwsSolutions-CFR1"),

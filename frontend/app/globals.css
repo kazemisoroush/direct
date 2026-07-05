@@ -1,22 +1,412 @@
+/*
+ * Direct — "warm & local" identity.
+ * The anti-platform look: warm paper, editorial serif wordmark, receipt motifs,
+ * one confident amber accent. Deliberately NOT a cold black delivery-app UI.
+ */
+
 :root {
-  color-scheme: light dark;
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
+  --paper: #f6efe3;
+  --paper-2: #efe5d5;
+  --surface: #fffbf4;
+  --ink: #2a2019;
+  --ink-soft: #6d5f52;
+  --ink-faint: #9b8c7c;
+  --line: #e4d8c5;
+  --line-strong: #d6c6ae;
+  --accent: #c9512a;
+  --accent-hover: #b3441f;
+  --accent-ink: #fff8f2;
+  --save: #4f7a3f;
+  --shadow: 0 1px 2px rgba(42, 32, 25, 0.06), 0 8px 24px rgba(42, 32, 25, 0.07);
+  --radius: 14px;
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, ui-serif, serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #191411;
+    --paper-2: #201a15;
+    --surface: #241d17;
+    --ink: #f3e9db;
+    --ink-soft: #c3b3a1;
+    --ink-faint: #8c7d6d;
+    --line: #382e25;
+    --line-strong: #4a3d31;
+    --accent: #e87642;
+    --accent-hover: #f28a58;
+    --accent-ink: #1a120c;
+    --save: #93bd79;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="light"] {
+  --paper: #f6efe3;
+  --paper-2: #efe5d5;
+  --surface: #fffbf4;
+  --ink: #2a2019;
+  --ink-soft: #6d5f52;
+  --ink-faint: #9b8c7c;
+  --line: #e4d8c5;
+  --line-strong: #d6c6ae;
+  --accent: #c9512a;
+  --accent-hover: #b3441f;
+  --accent-ink: #fff8f2;
+  --save: #4f7a3f;
+  --shadow: 0 1px 2px rgba(42, 32, 25, 0.06), 0 8px 24px rgba(42, 32, 25, 0.07);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --paper: #191411;
+  --paper-2: #201a15;
+  --surface: #241d17;
+  --ink: #f3e9db;
+  --ink-soft: #c3b3a1;
+  --ink-faint: #8c7d6d;
+  --line: #382e25;
+  --line-strong: #4a3d31;
+  --accent: #e87642;
+  --accent-hover: #f28a58;
+  --accent-ink: #1a120c;
+  --save: #93bd79;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--paper);
+  /* faint warm grain so the paper reads as paper, not flat fill */
+  background-image: radial-gradient(var(--paper-2) 0.5px, transparent 0.5px);
+  background-size: 14px 14px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- shared bits ---------- */
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.wordmark .mark {
+  color: var(--accent);
+  flex: none;
+}
+.wordmark .dot {
+  color: var(--accent);
+}
+
+.btn {
+  appearance: none;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-weight: 600;
+  padding: 0.7rem 1.1rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.05s ease;
+}
+.btn:hover {
+  background: var(--accent-hover);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.link {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  cursor: pointer;
+  padding: 0.3rem 0.4rem;
+  border-radius: 8px;
+}
+.link:hover {
+  color: var(--ink);
+  background: var(--paper-2);
+}
+
+[role="alert"] {
+  color: var(--accent);
+  font-size: 0.9rem;
   margin: 0;
 }
 
-.home {
-  max-width: 40rem;
-  margin: 4rem auto;
-  padding: 0 1.5rem;
-  line-height: 1.5;
+/* ---------- login ---------- */
+
+.login-shell {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.login {
+  width: 100%;
+  max-width: 24rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem 1.75rem;
+}
+.login .wordmark {
+  font-size: 1.9rem;
+}
+.login .lede {
+  color: var(--ink-soft);
+  margin: 0.5rem 0 1.5rem;
+}
+.login form {
+  display: grid;
+  gap: 1rem;
+}
+.login label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.login input {
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+}
+.login input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+.login .btn {
+  margin-top: 0.25rem;
+}
+
+/* ---------- home ---------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar .wordmark {
+  font-size: 1.2rem;
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.address {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 60vw;
+  padding: 0.45rem 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+}
+.address:hover {
+  border-color: var(--accent);
+}
+.address .pin {
+  color: var(--accent);
+  flex: none;
+}
+.address .who {
+  color: var(--ink-faint);
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.address .val {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+.address .caret {
+  color: var(--ink-faint);
+  flex: none;
+}
+
+.page {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1.75rem 1.25rem 4rem;
+}
+.page-head {
+  margin: 0.5rem 0 1.25rem;
+}
+.page-head h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: 1.7rem;
+  margin: 0 0 0.25rem;
+}
+.page-head p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+/* receipt-style section rule */
+.rule {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0 1rem;
+  color: var(--ink-faint);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.rule::after {
+  content: "";
+  flex: 1;
+  border-top: 1.5px dashed var(--line-strong);
+}
+
+.restaurant-list {
+  display: grid;
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.restaurant-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+.restaurant-card .name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0;
+}
+.restaurant-card .meta {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  margin: 0.15rem 0 0;
+}
+
+/* empty state — honest for M1 */
+.empty {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 0.85rem;
+  padding: 2.75rem 1.5rem;
+  background: var(--surface);
+  border: 1.5px dashed var(--line-strong);
+  border-radius: var(--radius);
+}
+.empty .glyph {
+  color: var(--accent);
+  opacity: 0.9;
+}
+.empty h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin: 0;
+}
+.empty p {
+  margin: 0;
+  color: var(--ink-soft);
+  max-width: 22rem;
+}
+.empty .save-note {
+  color: var(--save);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.loading {
+  color: var(--ink-soft);
+  padding: 2rem 0;
+  text-align: center;
+}
+
+/* ---------- theme toggle ---------- */
+.corner-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+}
+.icon-btn {
+  appearance: none;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-soft);
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.icon-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }

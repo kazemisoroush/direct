@@ -4,9 +4,9 @@ info:
   description: >
     Order straight from the restaurant, skipping the delivery-platform tax.
     This contract is the source of truth: the backend implements it and the frontend
-    consumes it; no client talks to storage directly. M0 exposes only a health probe —
-    auth, restaurants, menu and orders land in later milestones.
-  version: 0.1.0
+    consumes it; no client talks to storage directly. Menu and orders land in later
+    milestones.
+  version: 0.2.0
 paths:
   /health:
     get:
@@ -24,3 +24,56 @@ paths:
                   status:
                     type: string
                     example: ok
+  /restaurants:
+    get:
+      operationId: listRestaurants
+      summary: List restaurants that deliver to an address.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: address
+          in: query
+          required: false
+          description: The customer's delivery address; only restaurants that deliver to it are returned.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Restaurants that deliver to the address.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListRestaurantsResponse'
+        '401':
+          description: Missing or invalid access token.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Restaurant:
+      type: object
+      required: [id, name, suburb, address, deliversToPostcodes]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        suburb:
+          type: string
+        address:
+          type: string
+        deliversToPostcodes:
+          type: array
+          items:
+            type: string
+    ListRestaurantsResponse:
+      type: object
+      required: [restaurants]
+      properties:
+        restaurants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Restaurant'
