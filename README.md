@@ -30,9 +30,10 @@ reading. Payments, multi-restaurant onboarding and delivery logistics stay out o
 ## Status
 
 - **M0** — baseline: static page over CloudFront + a `GET /health` Lambda, deployed to AWS on merge to `main`, CI on PRs.
-- **M1** — walking skeleton: Amazon Cognito auth and the one authenticated page (delivery address on top + a data-driven restaurant list from a DynamoDB table, empty until M2). `GET /health` stays public; every other route requires a Cognito access token.
+- **M1** — walking skeleton: Amazon Cognito auth and the one authenticated page (delivery address on top + a data-driven restaurant list). `GET /health` stays public; every other route requires a Cognito access token.
+- **M2** — restaurant CRUD is API-first: `POST /restaurants` creates a restaurant with its menu, `GET /restaurants/{id}` returns it, and the home card opens a menu page. The address→restaurant filter shows a restaurant only when it delivers to the selected postcode. The catalogue is populated by calling the API (no committed seed data or CLI).
 
-Restaurants, menu and orders land in M2+.
+Cart, checkout and placing an order land in M3.
 
 ## Commands
 

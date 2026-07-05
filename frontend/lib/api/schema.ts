@@ -31,6 +31,27 @@ export interface paths {
         /** List restaurants that deliver to an address. */
         get: operations["listRestaurants"];
         put?: never;
+        /**
+         * Create or replace a restaurant with its menu.
+         * @description API-first entry point for the catalogue. Restaurants (and their menus) are added by POSTing here, not by writing to storage directly.
+         */
+        post: operations["createRestaurant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/restaurants/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one restaurant with its full menu. */
+        get: operations["getRestaurant"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -47,7 +68,21 @@ export interface components {
             name: string;
             suburb: string;
             address: string;
+            phone?: string;
             deliversToPostcodes: string[];
+            /** @description Populated on the detail read; omitted from list results. */
+            menu?: components["schemas"]["MenuItem"][];
+        };
+        MenuItem: {
+            id: string;
+            name: string;
+            description?: string;
+            /**
+             * Format: int64
+             * @description Direct in-store price in cents (integer money, no floats).
+             */
+            priceCents: number;
+            category: string;
         };
         ListRestaurantsResponse: {
             restaurants: components["schemas"]["Restaurant"][];
@@ -107,6 +142,80 @@ export interface operations {
             };
             /** @description Missing or invalid access token. */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createRestaurant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Restaurant"];
+            };
+        };
+        responses: {
+            /** @description The stored restaurant. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Restaurant"];
+                };
+            };
+            /** @description Missing id/name or an invalid body. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getRestaurant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The restaurant and its menu. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Restaurant"];
+                };
+            };
+            /** @description Missing or invalid access token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No restaurant with that id. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

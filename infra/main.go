@@ -76,9 +76,9 @@ func NewDirectStack(scope constructs.Construct, id string, props *awscdk.StackPr
 		},
 	})
 
-	// The M1 API only reads restaurants; seeding is done out-of-band. Grant read-only and
-	// widen to read-write when the API itself starts writing.
-	table.GrantReadData(fn)
+	// The API does restaurant CRUD (POST /restaurants creates/replaces), so it needs
+	// read-write on the table. Access stays scoped to this one table by the grant helper.
+	table.GrantReadWriteData(fn)
 
 	api := awsapigatewayv2.NewHttpApi(stack, jsii.String("HttpApi"), &awsapigatewayv2.HttpApiProps{
 		CorsPreflight: &awsapigatewayv2.CorsPreflightOptions{

@@ -41,6 +41,21 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
+// Get mocks base method.
+func (m *MockStore) Get(ctx context.Context, id string) (domain.Restaurant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret0, _ := ret[0].(domain.Restaurant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockStoreMockRecorder) Get(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockStore)(nil).Get), ctx, id)
+}
+
 // ListDeliveringTo mocks base method.
 func (m *MockStore) ListDeliveringTo(ctx context.Context, address string) ([]domain.Restaurant, error) {
 	m.ctrl.T.Helper()
@@ -54,4 +69,18 @@ func (m *MockStore) ListDeliveringTo(ctx context.Context, address string) ([]dom
 func (mr *MockStoreMockRecorder) ListDeliveringTo(ctx, address any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDeliveringTo", reflect.TypeOf((*MockStore)(nil).ListDeliveringTo), ctx, address)
+}
+
+// Put mocks base method.
+func (m *MockStore) Put(ctx context.Context, r domain.Restaurant) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Put", ctx, r)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Put indicates an expected call of Put.
+func (mr *MockStoreMockRecorder) Put(ctx, r any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Put", reflect.TypeOf((*MockStore)(nil).Put), ctx, r)
 }

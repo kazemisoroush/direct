@@ -2,15 +2,20 @@ package restaurant
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
 	"github.com/kazemisoroush/direct/backend/internal/domain"
 )
+
+// ErrNotFound is returned by Get when no restaurant has the given id.
+var ErrNotFound = errors.New("restaurant not found")
 
 // postcodePattern matches a 4-digit Australian postcode inside an address string.
 var postcodePattern = regexp.MustCompile(`\b\d{4}\b`)
@@ -44,10 +49,47 @@ func (s *DynamoStore) ListDeliveringTo(ctx context.Context, address string) ([]d
 	result := make([]domain.Restaurant, 0, len(all))
 	for _, r := range all {
 		if deliversTo(r, postcode) {
+			r.Menu = nil // list results are lean; the menu is fetched via Get.
 			result = append(result, r)
 		}
 	}
 	return result, nil
+}
+
+// Put creates or replaces a restaurant (with its menu). It backs POST /restaurants; the read
+// paths (Get, ListDeliveringTo) never call it.
+func (s *DynamoStore) Put(ctx context.Context, r domain.Restaurant) error {
+	item, err := attributevalue.MarshalMap(r)
+	if err != nil {
+		return fmt.Errorf("marshal restaurant %q: %w", r.ID, err)
+	}
+	if _, err := s.client.PutItem(ctx, &dynamodb.PutItemInput{
+		TableName: aws.String(s.table),
+		Item:      item,
+	}); err != nil {
+		return fmt.Errorf("put restaurant %q: %w", r.ID, err)
+	}
+	return nil
+}
+
+// Get reads one restaurant, including its menu, by id.
+func (s *DynamoStore) Get(ctx context.Context, id string) (domain.Restaurant, error) {
+	out, err := s.client.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(s.table),
+		Key:       map[string]types.AttributeValue{"id": &types.AttributeValueMemberS{Value: id}},
+	})
+	if err != nil {
+		return domain.Restaurant{}, fmt.Errorf("get restaurant %q: %w", id, err)
+	}
+	if out.Item == nil {
+		return domain.Restaurant{}, fmt.Errorf("get restaurant %q: %w", id, ErrNotFound)
+	}
+
+	var restaurant domain.Restaurant
+	if err := attributevalue.UnmarshalMap(out.Item, &restaurant); err != nil {
+		return domain.Restaurant{}, fmt.Errorf("unmarshal restaurant %q: %w", id, err)
+	}
+	return restaurant, nil
 }
 
 // deliversTo reports whether the restaurant delivers to the postcode. A restaurant with no
