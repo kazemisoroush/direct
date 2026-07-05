@@ -56,8 +56,8 @@ func (s *DynamoStore) ListDeliveringTo(ctx context.Context, address string) ([]d
 	return result, nil
 }
 
-// Put writes a restaurant (with its menu) to the table. Used by the out-of-band seeder so
-// all DynamoDB marshalling stays in this package; the API never calls it (its role is read-only).
+// Put creates or replaces a restaurant (with its menu). It backs POST /restaurants; the read
+// paths (Get, ListDeliveringTo) never call it.
 func (s *DynamoStore) Put(ctx context.Context, r domain.Restaurant) error {
 	item, err := attributevalue.MarshalMap(r)
 	if err != nil {
