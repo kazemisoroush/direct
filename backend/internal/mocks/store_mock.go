@@ -41,6 +41,21 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
+// Get mocks base method.
+func (m *MockStore) Get(ctx context.Context, id string) (domain.Restaurant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret0, _ := ret[0].(domain.Restaurant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockStoreMockRecorder) Get(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockStore)(nil).Get), ctx, id)
+}
+
 // ListDeliveringTo mocks base method.
 func (m *MockStore) ListDeliveringTo(ctx context.Context, address string) ([]domain.Restaurant, error) {
 	m.ctrl.T.Helper()

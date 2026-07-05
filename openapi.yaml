@@ -4,9 +4,8 @@ info:
   description: >
     Order straight from the restaurant, skipping the delivery-platform tax.
     This contract is the source of truth: the backend implements it and the frontend
-    consumes it; no client talks to storage directly. Menu and orders land in later
-    milestones.
-  version: 0.2.0
+    consumes it; no client talks to storage directly. Ordering lands in a later milestone.
+  version: 0.3.0
 paths:
   /health:
     get:
@@ -46,6 +45,29 @@ paths:
                 $ref: '#/components/schemas/ListRestaurantsResponse'
         '401':
           description: Missing or invalid access token.
+  /restaurants/{id}:
+    get:
+      operationId: getRestaurant
+      summary: Get one restaurant with its full menu.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The restaurant and its menu.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Restaurant'
+        '401':
+          description: Missing or invalid access token.
+        '404':
+          description: No restaurant with that id.
 components:
   securitySchemes:
     bearerAuth:
@@ -65,10 +87,33 @@ components:
           type: string
         address:
           type: string
+        phone:
+          type: string
         deliversToPostcodes:
           type: array
           items:
             type: string
+        menu:
+          type: array
+          description: Populated on the detail read; omitted from list results.
+          items:
+            $ref: '#/components/schemas/MenuItem'
+    MenuItem:
+      type: object
+      required: [id, name, priceCents, category]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        priceCents:
+          type: integer
+          format: int64
+          description: Direct in-store price in cents (integer money, no floats).
+        category:
+          type: string
     ListRestaurantsResponse:
       type: object
       required: [restaurants]

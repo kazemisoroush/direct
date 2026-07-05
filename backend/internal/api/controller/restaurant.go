@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/kazemisoroush/direct/backend/internal/domain"
@@ -31,4 +32,18 @@ func (c *RestaurantController) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, listRestaurantsResponse{Restaurants: items})
+}
+
+// Get returns one restaurant with its menu, or 404 when the id is unknown.
+func (c *RestaurantController) Get(w http.ResponseWriter, r *http.Request) {
+	restaurantItem, err := c.store.Get(r.Context(), r.PathValue("id"))
+	if errors.Is(err, restaurant.ErrNotFound) {
+		writeError(w, http.StatusNotFound, "restaurant not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "get restaurant")
+		return
+	}
+	writeJSON(w, http.StatusOK, restaurantItem)
 }

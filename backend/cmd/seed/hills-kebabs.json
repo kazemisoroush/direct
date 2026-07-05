@@ -1,0 +1,20 @@
+[
+  {
+    "id": "hills-kebabs-kellyville",
+    "name": "Hills Kebabs Kellyville",
+    "suburb": "Kellyville",
+    "address": "Shop 29, Kellyville Village, 90 Wrights Rd, Kellyville NSW 2155",
+    "phone": "(02) 8824 4227",
+    "deliversToPostcodes": ["2155"],
+    "menu": [
+      { "id": "chicken-kebab", "name": "Chicken Kebab", "priceCents": 1600, "category": "Kebabs" },
+      { "id": "beef-kebab", "name": "Beef Kebab", "priceCents": 1500, "category": "Kebabs" },
+      { "id": "mix-kebab", "name": "Mix Kebab", "priceCents": 1600, "category": "Kebabs" },
+      { "id": "falafel-roll", "name": "Falafel Roll", "priceCents": 1400, "category": "Kebabs" },
+      { "id": "mushroom-cheese-gozleme", "name": "Mushroom & Cheese Gözleme", "priceCents": 1800, "category": "Gözleme" },
+      { "id": "mince-spinach-cheese-gozleme", "name": "Mince, Spinach & Cheese Gözleme", "priceCents": 1800, "category": "Gözleme" },
+      { "id": "spinach-cheese-gozleme", "name": "Spinach & Cheese Gözleme", "priceCents": 1800, "category": "Gözleme" },
+      { "id": "pide", "name": "Pide", "priceCents": 1200, "category": "Pide" }
+    ]
+  }
+]

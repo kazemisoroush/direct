@@ -16,6 +16,7 @@ type Router struct {
 func NewRouter(restaurants *controller.RestaurantController, health *controller.HealthController) *Router {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /restaurants", restaurants.List)
+	mux.HandleFunc("GET /restaurants/{id}", restaurants.Get)
 	mux.Handle("GET /health", health)
 	return &Router{mux: mux}
 }
