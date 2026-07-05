@@ -1,0 +1,9 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.DS_Store
+
+# local dev only. the production config.json is written by the CDK BucketDeployment
+public/config.json

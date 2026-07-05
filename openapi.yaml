@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: Direct API
+  description: >
+    Order straight from the restaurant, skipping the delivery-platform tax.
+    This contract is the source of truth: the backend implements it and the frontend
+    consumes it; no client talks to storage directly. M0 exposes only a health probe —
+    auth, restaurants, menu and orders land in later milestones.
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Liveness probe.
+      responses:
+        '200':
+          description: Service is up.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    example: ok
