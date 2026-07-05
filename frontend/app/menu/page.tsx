@@ -25,7 +25,11 @@ function MenuPageInner() {
   }, [ready, authenticated, router]);
 
   const load = useCallback(async () => {
-    if (!api || !id) return;
+    if (!api) return;
+    if (!id) {
+      setRestaurant(null); // no restaurant in the URL → show the not-found state, not a spinner.
+      return;
+    }
     setError(null);
     try {
       setRestaurant(await getRestaurant(api, id));

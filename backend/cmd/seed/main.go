@@ -12,12 +12,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 
 	"github.com/kazemisoroush/direct/backend/internal/domain"
+	"github.com/kazemisoroush/direct/backend/internal/restaurant"
 )
 
 func main() {
@@ -46,15 +45,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("load AWS config: %v", err)
 	}
-	client := dynamodb.NewFromConfig(awsCfg)
+	store := restaurant.NewDynamoStore(dynamodb.NewFromConfig(awsCfg), *table)
 
 	for _, r := range restaurants {
-		item, err := attributevalue.MarshalMap(r)
-		if err != nil {
-			log.Fatalf("marshal %s: %v", r.ID, err)
-		}
-		if _, err := client.PutItem(ctx, &dynamodb.PutItemInput{TableName: aws.String(*table), Item: item}); err != nil {
-			log.Fatalf("put %s: %v", r.ID, err)
+		if err := store.Put(ctx, r); err != nil {
+			log.Fatalf("seed %s: %v", r.ID, err)
 		}
 		log.Printf("seeded %s — %s (%d menu items)", r.ID, r.Name, len(r.Menu))
 	}
