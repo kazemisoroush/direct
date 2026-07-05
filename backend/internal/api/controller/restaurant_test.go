@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -83,6 +84,45 @@ func TestGetReturnsRestaurantWithMenu(t *testing.T) {
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
 	require.Len(t, body.Menu, 1)
 	assert.Equal(t, int64(1500), body.Menu[0].PriceCents)
+}
+
+func TestCreateStoresRestaurant(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	store := mocks.NewMockStore(ctrl)
+	store.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
+	body := `{"id":"hills-kebabs-kellyville","name":"Hills Kebabs Kellyville","suburb":"Kellyville",` +
+		`"address":"Shop 29","deliversToPostcodes":["2155"],` +
+		`"menu":[{"id":"beef-kebab","name":"Beef Kebab","priceCents":1500,"category":"Kebabs"}]}`
+	req := httptest.NewRequest(http.MethodPost, "/restaurants", strings.NewReader(body))
+	rec := httptest.NewRecorder()
+
+	NewRestaurantController(store).Create(rec, req)
+
+	require.Equal(t, http.StatusCreated, rec.Code)
+	assert.Contains(t, rec.Body.String(), "hills-kebabs-kellyville")
+}
+
+func TestCreateRejectsInvalidBody(t *testing.T) {
+	// store.Put must not be called on a bad body.
+	ctrl := gomock.NewController(t)
+	store := mocks.NewMockStore(ctrl)
+	req := httptest.NewRequest(http.MethodPost, "/restaurants", strings.NewReader("not json"))
+	rec := httptest.NewRecorder()
+
+	NewRestaurantController(store).Create(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateRequiresIDAndName(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	store := mocks.NewMockStore(ctrl)
+	req := httptest.NewRequest(http.MethodPost, "/restaurants", strings.NewReader(`{"name":"No ID"}`))
+	rec := httptest.NewRecorder()
+
+	NewRestaurantController(store).Create(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
 
 func TestGetUnknownRestaurantIs404(t *testing.T) {

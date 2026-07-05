@@ -9,9 +9,10 @@ import (
 
 //go:generate go tool mockgen -source=store.go -destination=../mocks/store_mock.go -package=mocks
 
-// Store reads restaurants. ListDeliveringTo returns the delivery-area matches without menus;
-// Get returns one restaurant with its full menu.
+// Store is the restaurant data access. ListDeliveringTo returns the delivery-area matches
+// without menus; Get returns one restaurant with its full menu; Put creates or replaces one.
 type Store interface {
 	ListDeliveringTo(ctx context.Context, address string) ([]domain.Restaurant, error)
 	Get(ctx context.Context, id string) (domain.Restaurant, error)
+	Put(ctx context.Context, r domain.Restaurant) error
 }

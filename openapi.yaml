@@ -45,6 +45,31 @@ paths:
                 $ref: '#/components/schemas/ListRestaurantsResponse'
         '401':
           description: Missing or invalid access token.
+    post:
+      operationId: createRestaurant
+      summary: Create or replace a restaurant with its menu.
+      description: >
+        API-first entry point for the catalogue. Restaurants (and their menus) are added by
+        POSTing here, not by writing to storage directly.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Restaurant'
+      responses:
+        '201':
+          description: The stored restaurant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Restaurant'
+        '400':
+          description: Missing id/name or an invalid body.
+        '401':
+          description: Missing or invalid access token.
   /restaurants/{id}:
     get:
       operationId: getRestaurant

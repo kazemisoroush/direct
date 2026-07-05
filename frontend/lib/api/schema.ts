@@ -31,7 +31,11 @@ export interface paths {
         /** List restaurants that deliver to an address. */
         get: operations["listRestaurants"];
         put?: never;
-        post?: never;
+        /**
+         * Create or replace a restaurant with its menu.
+         * @description API-first entry point for the catalogue. Restaurants (and their menus) are added by POSTing here, not by writing to storage directly.
+         */
+        post: operations["createRestaurant"];
         delete?: never;
         options?: never;
         head?: never;
@@ -135,6 +139,44 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ListRestaurantsResponse"];
                 };
+            };
+            /** @description Missing or invalid access token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createRestaurant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Restaurant"];
+            };
+        };
+        responses: {
+            /** @description The stored restaurant. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Restaurant"];
+                };
+            };
+            /** @description Missing id/name or an invalid body. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Missing or invalid access token. */
             401: {

@@ -1,31 +1,33 @@
-// Command seed writes restaurants (with menus) into the DynamoDB table out-of-band.
-// The API Lambda is read-only; seeding runs from a developer/operator with write creds:
+// Command seed loads restaurants from a JSON file and POSTs each to the Direct API.
+// API-first: data enters the catalogue through the API, never by writing to storage directly.
 //
-//	go run ./cmd/seed --table <DIRECT_TABLE> --file cmd/seed/hills-kebabs.json
+//	go run ./cmd/seed --api https://<api-id>.execute-api.<region>.amazonaws.com \
+//	  --token <cognito-access-token> --file cmd/seed/hills-kebabs.json
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
+	"io"
 	"log"
+	"net/http"
 	"os"
+	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-
 	"github.com/kazemisoroush/direct/backend/internal/domain"
-	"github.com/kazemisoroush/direct/backend/internal/restaurant"
 )
 
 func main() {
-	table := flag.String("table", os.Getenv("DIRECT_TABLE"), "DynamoDB restaurants table name")
+	api := flag.String("api", "", "Direct API base URL")
+	token := flag.String("token", "", "Cognito access token (sent as a Bearer token)")
 	file := flag.String("file", "", "path to a JSON file with a list of restaurants")
 	flag.Parse()
 
-	if *table == "" || *file == "" {
-		log.Fatal("usage: seed --table <name> --file <restaurants.json>")
+	if *api == "" || *token == "" || *file == "" {
+		log.Fatal("usage: seed --api <url> --token <bearer> --file <restaurants.json>")
 	}
 
 	raw, err := os.ReadFile(*file)
@@ -41,17 +43,31 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	awsCfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		log.Fatalf("load AWS config: %v", err)
-	}
-	store := restaurant.NewDynamoStore(dynamodb.NewFromConfig(awsCfg), *table)
+	client := &http.Client{Timeout: 15 * time.Second}
+	endpoint := strings.TrimRight(*api, "/") + "/restaurants"
 
 	for _, r := range restaurants {
-		if err := store.Put(ctx, r); err != nil {
-			log.Fatalf("seed %s: %v", r.ID, err)
+		body, err := json.Marshal(r)
+		if err != nil {
+			log.Fatalf("marshal %s: %v", r.ID, err)
 		}
-		log.Printf("seeded %s — %s (%d menu items)", r.ID, r.Name, len(r.Menu))
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
+		if err != nil {
+			log.Fatalf("build request for %s: %v", r.ID, err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+*token)
+
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Fatalf("POST %s: %v", r.ID, err)
+		}
+		payload, _ := io.ReadAll(resp.Body)
+		_ = resp.Body.Close()
+		if resp.StatusCode != http.StatusCreated {
+			log.Fatalf("POST %s: unexpected status %d: %s", r.ID, resp.StatusCode, payload)
+		}
+		log.Printf("seeded %s — %s via API (%d menu items)", r.ID, r.Name, len(r.Menu))
 	}
-	log.Printf("done: %d restaurant(s) seeded into %s", len(restaurants), *table)
+	log.Printf("done: %d restaurant(s) POSTed to %s", len(restaurants), endpoint)
 }
