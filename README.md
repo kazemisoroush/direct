@@ -27,10 +27,12 @@ reading. Payments, multi-restaurant onboarding and delivery logistics stay out o
 - `frontend/` — Next.js static-export SPA.
 - `openapi.yaml` — the API contract; source of truth for backend and frontend.
 
-## M0 baseline
+## Status
 
-M0 ships the skeleton only: a static page served over CloudFront and a `GET /health`
-Lambda behind the HTTP API, built and deployed to AWS on merge to `main`, with CI on PRs.
+- **M0** — baseline: static page over CloudFront + a `GET /health` Lambda, deployed to AWS on merge to `main`, CI on PRs.
+- **M1** — walking skeleton: Amazon Cognito auth and the one authenticated page (delivery address on top + a data-driven restaurant list from a DynamoDB table, empty until M2). `GET /health` stays public; every other route requires a Cognito access token.
+
+Restaurants, menu and orders land in M2+.
 
 ## Commands
 

@@ -59,7 +59,9 @@ func NewDirectStack(scope constructs.Construct, id string, props *awscdk.StackPr
 
 	client := pool.AddClient(jsii.String("ApiClient"), &awscognito.UserPoolClientOptions{
 		GenerateSecret:      jsii.Bool(false),
-		AuthFlows:           &awscognito.AuthFlow{UserPassword: jsii.Bool(true), UserSrp: jsii.Bool(true)},
+		// SRP only: the SPA signs in with amazon-cognito-identity-js (USER_SRP_AUTH); the
+		// plaintext USER_PASSWORD_AUTH flow is unused and left off to shrink the attack surface.
+		AuthFlows:           &awscognito.AuthFlow{UserSrp: jsii.Bool(true)},
 		AccessTokenValidity: awscdk.Duration_Hours(jsii.Number(1)),
 		IdTokenValidity:     awscdk.Duration_Hours(jsii.Number(1)),
 	})
@@ -74,7 +76,9 @@ func NewDirectStack(scope constructs.Construct, id string, props *awscdk.StackPr
 		},
 	})
 
-	table.GrantReadWriteData(fn)
+	// The M1 API only reads restaurants; seeding is done out-of-band. Grant read-only and
+	// widen to read-write when the API itself starts writing.
+	table.GrantReadData(fn)
 
 	api := awsapigatewayv2.NewHttpApi(stack, jsii.String("HttpApi"), &awsapigatewayv2.HttpApiProps{
 		CorsPreflight: &awsapigatewayv2.CorsPreflightOptions{
