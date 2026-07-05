@@ -2,14 +2,34 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+
 	"github.com/kazemisoroush/direct/backend/internal/api"
+	appconfig "github.com/kazemisoroush/direct/backend/internal/config"
+	"github.com/kazemisoroush/direct/backend/internal/restaurant"
 )
 
 func main() {
-	const addr = ":8080"
-	log.Printf("Direct API listening on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, api.New()))
+	ctx := context.Background()
+	cfg := appconfig.Load()
+
+	awsCfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		log.Fatalf("load AWS config: %v", err)
+	}
+
+	store := restaurant.NewDynamoStore(dynamodb.NewFromConfig(awsCfg), cfg.Table)
+
+	handler, err := api.New(ctx, cfg, store)
+	if err != nil {
+		log.Fatalf("configure api: %v", err)
+	}
+
+	log.Printf("Direct API listening on %s", cfg.ServerAddr())
+	log.Fatal(http.ListenAndServe(cfg.ServerAddr(), handler))
 }
